@@ -116,6 +116,11 @@ func place_asset(focus_on_placement: bool):
 			if not is_instance_valid(parent) or not is_instance_valid(asset.get_resource()):
 				return false
 
+			# Skip the click if this asset already sits here with the same transform,
+			# so repeated clicks don't stack invisible duplicates.
+			if not is_brush_mode and scene and _has_matching_instance(scene, _get_single_spawn_transform()):
+				return true
+
 			if not _is_in_stroke:
 				undo_redo.create_action("Place Asset(s): %s" % asset.name, 0, parent)
 				_is_in_stroke = true
@@ -144,6 +149,30 @@ func place_asset(focus_on_placement: bool):
 			return true
 	else:
 		return false
+
+
+func _get_single_spawn_transform() -> Transform3D:
+	if preview_node is AssetPreviewContainer:
+		var transforms = preview_node.get_children_transforms()
+		if transforms.size() > 0:
+			return transforms[0]
+	return preview_node.global_transform
+
+
+func _has_matching_instance(scene: Node, transform: Transform3D) -> bool:
+	const TOLERANCE := 0.01
+	for node in scene.find_children("*", "Node3D", true, false):
+		if not node.has_meta(META_ASSET_ID) or node.get_meta(META_ASSET_ID) != asset.id:
+			continue
+		var other: Transform3D = node.global_transform
+		if (
+			other.origin.distance_to(transform.origin) < TOLERANCE
+			and other.basis.x.distance_to(transform.basis.x) < TOLERANCE
+			and other.basis.y.distance_to(transform.basis.y) < TOLERANCE
+			and other.basis.z.distance_to(transform.basis.z) < TOLERANCE
+		):
+			return true
+	return false
 
 
 func _schedule_commit():
