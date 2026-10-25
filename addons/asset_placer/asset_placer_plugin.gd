@@ -279,6 +279,10 @@ func _toggle_plugin_active() -> void:
 
 # gdlint: disable=max-returns
 func _forward_3d_gui_input(viewport_camera, event):
+	# Let freelook (RMB held) have every key, including the always-on bindings
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+
 	if current_settings.bindings[AssetPlacerSettings.Bindings.TogglePluginActive].is_pressed(event):
 		_toggle_plugin_active()
 		return _handled()
@@ -290,9 +294,6 @@ func _forward_3d_gui_input(viewport_camera, event):
 	# Only process other inputs when plugin is active
 	if not _presenter.plugin_is_active():
 		return EditorPlugin.AFTER_GUI_INPUT_PASS
-
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
-		return false
 
 	if asset_palette.get_palette_count() > 1:
 		var is_pressed = event.is_pressed()
@@ -407,25 +408,25 @@ func _show_update_available(_update: PluginUpdate):
 
 func _palette_slot_from_key(event: InputEventKey) -> int:
 	match event.keycode:
-		KEY_1, KEY_KP_1:
+		KEY_1:
 			return 0
-		KEY_2, KEY_KP_2:
+		KEY_2:
 			return 1
-		KEY_3, KEY_KP_3:
+		KEY_3:
 			return 2
-		KEY_4, KEY_KP_4:
+		KEY_4:
 			return 3
-		KEY_5, KEY_KP_5:
+		KEY_5:
 			return 4
-		KEY_6, KEY_KP_6:
+		KEY_6:
 			return 5
-		KEY_7, KEY_KP_7:
+		KEY_7:
 			return 6
-		KEY_8, KEY_KP_8:
+		KEY_8:
 			return 7
-		KEY_9, KEY_KP_9:
+		KEY_9:
 			return 8
-		KEY_0, KEY_KP_0:
+		KEY_0:
 			return 9
 		_:
 			return -1
